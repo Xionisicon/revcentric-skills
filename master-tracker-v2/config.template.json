@@ -1,0 +1,35 @@
+{
+  "_comment": "Copy to config.json and fill in. No secrets are committed; config.json is gitignored.",
+
+  "apollo_api_key": "YOUR_APOLLO_MASTER_API_KEY",
+
+  "google": {
+    "sheet_id": "YOUR_GOOGLE_SHEET_ID",
+    "oauth_token_file": "./google_token.json",
+    "client_secret_file": "./client_secret.json"
+  },
+
+  "reps": {
+    "Jane Doe":  "apollo_user_id_1",
+    "John Smith": "apollo_user_id_2"
+  },
+
+  "keep_dispositions": [
+    "Meeting Scheduled", "Meeting Confirmed", "Rescheduled",
+    "Activated Lead", "Not Interested", "Nurture",
+    "Referred Outward", "Not Me", "Not Now",
+    "Connect Incomplete - Send Propaganda"
+  ],
+
+  "keep_disposition_prefixes": ["Not Interested"],
+
+  "backfill_days": 30,
+
+  "autofill_correct_disposition_through": "2026-02-19",
+
+  "trellus": {
+    "_comment": "Optional. If set, raw recording URLs in call notes are minted into public view links.",
+    "api_key": "",
+    "team_id": ""
+  }
+}

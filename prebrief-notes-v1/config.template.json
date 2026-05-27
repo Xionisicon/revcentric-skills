@@ -1,0 +1,27 @@
+{
+  "_comment": "Copy to config.json and fill in. Credentials live in separate gitignored files (see SKILL.md).",
+
+  "sheet_id": "YOUR_GOOGLE_SHEET_ID",
+
+  "board_tab": "Meeting Board",
+
+  "_columns_note": "1-indexed positions on the board tab. Defaults match the standard layout.",
+  "columns": {
+    "prospect": 2,
+    "company": 3,
+    "prebrief": 7,
+    "recording": 8,
+    "rep": 9
+  },
+
+  "google": {
+    "_note": "Place google_token.json (OAuth, Drive+Sheets scopes) and client_secret.json in this folder.",
+    "oauth_token_file": "google_token.json",
+    "client_secret_file": "client_secret.json"
+  },
+
+  "trellus": {
+    "_note": "Place _trellus.json with {api_key, team_id} in this folder to fetch recordings.",
+    "use": true
+  }
+}

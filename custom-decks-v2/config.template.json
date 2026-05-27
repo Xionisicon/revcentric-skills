@@ -1,0 +1,32 @@
+{
+  "_comment": "Copy to config.json and fill in. Credentials live in separate gitignored files (see SKILL.md).",
+
+  "sheet_id": "YOUR_GOOGLE_SHEET_ID",
+
+  "custom_decks_tab": "Custom Decks",
+
+  "deck_source_dispositions": [
+    "Activated Lead", "Meeting Scheduled", "Nurture",
+    "Connect Incomplete - Send Propaganda"
+  ],
+
+  "reps": {
+    "Jane Doe":  {"apollo_id": "apollo_user_id_1", "email": "jane@yourco.com"},
+    "John Smith": {"apollo_id": "apollo_user_id_2", "email": "john@yourco.com"}
+  },
+
+  "google": {
+    "_note": "Place google_token.json (OAuth, Drive+Sheets+Slides scopes) and client_secret.json in this folder.",
+    "oauth_token_file": "google_token.json",
+    "client_secret_file": "client_secret.json"
+  },
+
+  "booking_link": "https://cal.com/yourco/intro",
+  "deck_folder_name": "Prospect Decks",
+
+  "seller": {
+    "_note": "Edit PROMPT_TEMPLATE in personalize.py and deck_template.md.tpl to your company's name + pitch. Default reference identity is 'RevCentric'.",
+    "name": "RevCentric",
+    "email": "sales@example.com"
+  }
+}

@@ -1,0 +1,11 @@
+# Never commit real configs or credentials
+config.json
+*_token.json
+google_token.json
+client_secret.json
+_trellus.json
+.env
+rendered/
+*.local.json
+__pycache__/
+*.pyc
