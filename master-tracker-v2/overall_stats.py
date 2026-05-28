@@ -119,7 +119,7 @@ ICP = oc.get('icp_personas', [
     ["GTM / BizDev",         ["*gtm*", "*business dev*"]],
     ["Operations / COO",     ["*operat*", "*coo*"]],
     ["Engineering / Product",["*engineer*", "*product*"]],
-    # 10th row left blank — only named personas are tracked
+    ["Owner / President",    ["*owner*", "*president*"]],
 ])
 
 # A-col metrics (rows 4-13), parallel to ICP + 10-Week
