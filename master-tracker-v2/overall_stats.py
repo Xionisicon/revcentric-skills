@@ -110,16 +110,16 @@ def week_meetings(n):
 
 # ICP personas — override via config key "icp_personas" if needed
 ICP = oc.get('icp_personas', [
-    ["Founder / Co-Founder", ["*found*"]],
-    ["CEO",                  ["*ceo*"]],
-    ["CRO / Revenue",        ["*revenue*", "*cro*"]],
-    ["VP of Sales",          ["*vp*sales*", "*vice president*sales*"]],
-    ["Head of Sales",        ["*head of sales*"]],
-    ["Growth / Marketing",   ["*growth*", "*marketing*"]],
-    ["GTM / BizDev",         ["*gtm*", "*business dev*"]],
-    ["Operations / COO",     ["*operat*", "*coo*"]],
-    ["Engineering / Product",["*engineer*", "*product*"]],
-    ["Owner / President",    ["*owner*", "*president*"]],
+    ["CEO",            ["*ceo*"]],
+    ["Founder",        ["*founder*"]],
+    ["President",      ["*president*"]],
+    ["Owner",          ["*owner*"]],
+    ["CRO",            ["*cro*", "*chief revenue*"]],
+    ["VP of Sales",    ["*vp*sales*", "*vice president*sales*"]],
+    ["Head of Sales",  ["*head of sales*"]],
+    ["VP of Marketing",["*vp*market*", "*cmo*", "*chief market*"]],
+    ["COO",            ["*coo*", "*chief operat*"]],
+    ["Head of Growth", ["*head of growth*", "*vp*growth*"]],
 ])
 
 # A-col metrics (rows 4-13), parallel to ICP + 10-Week
