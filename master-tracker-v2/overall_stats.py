@@ -225,7 +225,7 @@ for dispo, rep in zip(DISPOS_16_20, REPS_RANKED):
 
 # Row 21 — Not Now + footer
 rows.append(['Not Now', sum_dispo('Not Now'), '',
-             '*Score = Meetings×60 + Activated×30 + Nurture×10', '', '', '', '', '', ''])
+             '', '', '', '', '', '', ''])
 
 svc.spreadsheets().values().update(
     spreadsheetId=sid,
