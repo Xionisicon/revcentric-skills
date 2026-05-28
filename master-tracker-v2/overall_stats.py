@@ -86,12 +86,6 @@ def rep_booked(rep):
     parts = [f"COUNTIF('{rep}'!{REP_FCOL}:{REP_FCOL},\"{d}\")" for d in BOOKED]
     return "=" + "+".join(parts)
 
-def rep_score(rep):
-    """Weighted pipeline score: meetings×60 + activated×30 + nurture×10"""
-    mtgs = '+'.join(f"COUNTIF('{rep}'!{REP_FCOL}:{REP_FCOL},\"{d}\")" for d in BOOKED)
-    return (f"=({mtgs})*60"
-            f"+COUNTIF('{rep}'!{REP_FCOL}:{REP_FCOL},\"{ACT_DISPO}\")*30"
-            f"+COUNTIF('{rep}'!{REP_FCOL}:{REP_FCOL},\"{NUR_DISPO}\")*10")
 
 def rep_dispo(rep, dispo):
     return f"=COUNTIF('{rep}'!{REP_FCOL}:{REP_FCOL},\"{dispo}\")"
@@ -144,20 +138,17 @@ A_COL_4_13 = [
     ('Meeting Scheduled',     sum_dispo('Meeting Scheduled')),
 ]
 
-# Rank reps by booked meeting count (live query)
-def live_rep_score(rep):
+# Rank reps by raw meetings booked (live query)
+def live_rep_meetings(rep):
     try:
         r = svc.spreadsheets().values().get(
             spreadsheetId=sid, range=f"'{rep}'!{REP_FCOL}:{REP_FCOL}").execute()
         vals = r.get('values', [])
-        mtgs = sum(1 for row in vals[1:] if row and row[0].strip() in BOOKED)
-        act  = sum(1 for row in vals[1:] if row and row[0].strip() == ACT_DISPO)
-        nur  = sum(1 for row in vals[1:] if row and row[0].strip() == NUR_DISPO)
-        return mtgs * 60 + act * 30 + nur * 10
+        return sum(1 for row in vals[1:] if row and row[0].strip() in BOOKED)
     except Exception:
         return 0
 
-rep_counts  = {rep: live_rep_score(rep) for rep in REPS}
+rep_counts  = {rep: live_rep_meetings(rep) for rep in REPS}
 REPS_RANKED = sorted(REPS, key=lambda r: rep_counts[r], reverse=True)
 
 try:
@@ -201,7 +192,7 @@ rows.append(['Meeting Confirmed', sum_dispo('Meeting Confirmed'), '',
 rows.append([
     'Rescheduled',
     sum_dispo('Rescheduled') + '+' + sum_dispo('Needs Rescheduled').lstrip('='), '',
-    'Rep', 'Meetings', 'Activated', 'Nurture', '', 'Name', 'Score'
+    'Rep', 'Meetings', 'Activated', 'Nurture', '', 'Name', 'Meetings'
 ])
 
 # Rows 16-20 — disposition breakdown + rep stats
@@ -211,12 +202,12 @@ for dispo, rep in zip(DISPOS_16_20, REPS_RANKED):
     rows.append([
         dispo, sum_dispo(dispo), '',
         rep, rep_booked(rep), rep_dispo(rep, ACT_DISPO), rep_dispo(rep, NUR_DISPO), '',
-        rep, rep_score(rep)
+        rep, rep_booked(rep)
     ])
 
 # Row 21 — Not Now + footer
 rows.append(['Not Now', sum_dispo('Not Now'), '',
-             '*Score = Meetings×60 + Activated×30 + Nurture×10', '', '', '', '', '', ''])
+             '*Leaderboard rank reflects meetings booked — not call quality, close rate, or overall rep performance.', '', '', '', '', '', ''])
 
 svc.spreadsheets().values().update(
     spreadsheetId=sid,
