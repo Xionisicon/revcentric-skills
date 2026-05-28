@@ -207,7 +207,7 @@ for dispo, rep in zip(DISPOS_16_20, REPS_RANKED):
 
 # Row 21 — Not Now + footer
 rows.append(['Not Now', sum_dispo('Not Now'), '',
-             '*Leaderboard rank reflects meetings booked — not call quality, close rate, or overall rep performance.', '', '', '', '', '', ''])
+             '*Score = Meetings×60 + Activated×30 + Nurture×10', '', '', '', '', '', ''])
 
 svc.spreadsheets().values().update(
     spreadsheetId=sid,
@@ -216,13 +216,11 @@ svc.spreadsheets().values().update(
     body={'values': rows}
 ).execute()
 
-total_formula = ('="Total Lifetime Connects: "&(' +
-    '+'.join(f"COUNTA('{r}'!{REP_FCOL}2:{REP_FCOL})" for r in REPS) + ')')
 svc.spreadsheets().values().update(
     spreadsheetId=sid,
     range=f"'{STATS_TAB}'!I21",
     valueInputOption='USER_ENTERED',
-    body={'values': [[total_formula]]}
+    body={'values': [['*Rank = meetings booked, not rep performance.']]}
 ).execute()
 
 ranked_str = ', '.join(f"{r.split()[0]} {rep_counts[r]}" for r in REPS_RANKED)
