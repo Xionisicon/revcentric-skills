@@ -21,6 +21,7 @@ the right bucket without manual cleanup.
 import json
 import os
 from datetime import datetime, timezone
+from itertools import zip_longest
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -118,7 +119,7 @@ ICP = oc.get('icp_personas', [
     ["GTM / BizDev",         ["*gtm*", "*business dev*"]],
     ["Operations / COO",     ["*operat*", "*coo*"]],
     ["Engineering / Product",["*engineer*", "*product*"]],
-    ["All Titled",           ["*"]],
+    # 10th row left blank — only named personas are tracked
 ])
 
 # A-col metrics (rows 4-13), parallel to ICP + 10-Week
@@ -169,14 +170,18 @@ rows.append(['Statistics', '=CELL("sheet",$A$1)', '', 'ICP Report', '', '', '', 
 # Row 3 — column headers
 rows.append(['OUTCOMES', '', '', 'Title', 'Meetings', 'Activated', 'Nurture', '', 'Week', 'Meetings'])
 
-# Rows 4-13
-for i, ((a_label, a_formula), icp_row) in enumerate(zip(A_COL_4_13, ICP)):
-    icp_label, patterns = icp_row[0], icp_row[1]
-    rows.append([
-        a_label, a_formula, '',
-        icp_label, icp_meetings(patterns), icp_dispo(patterns, ACT_DISPO), icp_dispo(patterns, NUR_DISPO), '',
-        week_label(i), week_meetings(i),
-    ])
+# Rows 4-13 — 9 named ICP personas; row 13 ICP section left blank
+for i, (a_row, icp_row) in enumerate(zip_longest(A_COL_4_13, ICP, fillvalue=None)):
+    a_label, a_formula = a_row
+    if icp_row:
+        icp_label, patterns = icp_row[0], icp_row[1]
+        d_icp  = icp_label
+        d_mtgs = icp_meetings(patterns)
+        d_act  = icp_dispo(patterns, ACT_DISPO)
+        d_nur  = icp_dispo(patterns, NUR_DISPO)
+    else:
+        d_icp = d_mtgs = d_act = d_nur = ''
+    rows.append([a_label, a_formula, '', d_icp, d_mtgs, d_act, d_nur, '', week_label(i), week_meetings(i)])
 
 # Row 14 — Rep Breakdown + Leaderboard headers
 rows.append(['Meeting Confirmed', sum_dispo('Meeting Confirmed'), '',
