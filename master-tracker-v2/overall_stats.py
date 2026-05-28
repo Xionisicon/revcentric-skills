@@ -47,6 +47,7 @@ BOARD_DATE  = oc.get('board_col_date', 1)          # 1-indexed, col A default
 BOARD_QUAL  = oc.get('board_col_qualification', 4)  # col D default
 BOARD_SHOW  = oc.get('board_col_show_status', 5)    # col E default
 BOARD_SCORE = oc.get('board_col_score', 6)          # col F default
+BOARD_REP   = oc.get('board_col_rep', 9)            # col I default
 REP_TITLE   = oc.get('rep_col_title', 4)            # col D in rep tabs
 REP_DISPO   = oc.get('rep_col_dispo', 6)            # col F in rep tabs
 QUAL_LABEL  = oc.get('qualified_label', 'Qualified')
@@ -69,6 +70,7 @@ BOARD_ACOL = _col(BOARD_DATE)
 BOARD_DCOL = _col(BOARD_QUAL)
 BOARD_ECOL = _col(BOARD_SHOW)
 BOARD_FCOL = _col(BOARD_SCORE)
+BOARD_ICOL = _col(BOARD_REP)
 
 def sum_dispo(dispo):
     parts = [f"COUNTIF('{r}'!{REP_FCOL}:{REP_FCOL},\"{dispo}\")" for r in REPS]
@@ -138,17 +140,33 @@ A_COL_4_13 = [
     ('Meeting Scheduled',     sum_dispo('Meeting Scheduled')),
 ]
 
-# Rank reps by raw meetings booked (live query)
-def live_rep_meetings(rep):
+# Fetch Meeting Board showed counts per rep once (for effective-rate ranking)
+_board_rows = svc.spreadsheets().values().get(
+    spreadsheetId=sid,
+    range=f"'{BOARD_TAB}'!{BOARD_ECOL}2:{BOARD_ICOL}2000").execute().get('values', [])
+_board_showed = {}
+_ecol_idx = BOARD_REP - BOARD_SHOW  # offset within the fetched range
+for _r in _board_rows:
+    if _r and str(_r[0]).strip() == SHOW_LABEL and len(_r) > _ecol_idx:
+        _rn = str(_r[_ecol_idx]).strip()
+        if _rn: _board_showed[_rn] = _board_showed.get(_rn, 0) + 1
+
+def live_rep_effective_rate(rep):
     try:
         r = svc.spreadsheets().values().get(
-            spreadsheetId=sid, range=f"'{rep}'!{REP_FCOL}:{REP_FCOL}").execute()
-        vals = r.get('values', [])
-        return sum(1 for row in vals[1:] if row and row[0].strip() in BOOKED)
+            spreadsheetId=sid, range=f"'{rep}'!{REP_FCOL}2:{REP_FCOL}").execute()
+        convos = sum(1 for row in r.get('values', []) if row and row[0].strip())
+        return _board_showed.get(rep, 0) / convos if convos else 0.0
     except Exception:
-        return 0
+        return 0.0
 
-rep_counts  = {rep: live_rep_meetings(rep) for rep in REPS}
+def rep_effective_rate(rep):
+    showed = (f"COUNTIFS('{BOARD_TAB}'!{BOARD_ECOL}:{BOARD_ECOL},\"{SHOW_LABEL}\","
+              f"'{BOARD_TAB}'!{BOARD_ICOL}:{BOARD_ICOL},\"{rep}\")")
+    convos = f"COUNTA('{rep}'!{REP_FCOL}2:{REP_FCOL})"
+    return f'=IFERROR(TEXT({showed}/{convos},"0.0%"),"—")'
+
+rep_counts  = {rep: live_rep_effective_rate(rep) for rep in REPS}
 REPS_RANKED = sorted(REPS, key=lambda r: rep_counts[r], reverse=True)
 
 try:
@@ -192,7 +210,7 @@ rows.append(['Meeting Confirmed', sum_dispo('Meeting Confirmed'), '',
 rows.append([
     'Rescheduled',
     sum_dispo('Rescheduled') + '+' + sum_dispo('Needs Rescheduled').lstrip('='), '',
-    'Rep', 'Meetings', 'Activated', 'Nurture', '', 'Name', 'Meetings'
+    'Rep', 'Meetings', 'Activated', 'Nurture', '', 'Name', 'Eff. Rate'
 ])
 
 # Rows 16-20 — disposition breakdown + rep stats
@@ -202,7 +220,7 @@ for dispo, rep in zip(DISPOS_16_20, REPS_RANKED):
     rows.append([
         dispo, sum_dispo(dispo), '',
         rep, rep_booked(rep), rep_dispo(rep, ACT_DISPO), rep_dispo(rep, NUR_DISPO), '',
-        rep, rep_booked(rep)
+        rep, rep_effective_rate(rep)
     ])
 
 # Row 21 — Not Now + footer
@@ -220,8 +238,8 @@ svc.spreadsheets().values().update(
     spreadsheetId=sid,
     range=f"'{STATS_TAB}'!I21",
     valueInputOption='USER_ENTERED',
-    body={'values': [['*Rank = meetings booked, not rep performance.']]}
+    body={'values': [['*Eff. Rate = showed ÷ convos — goal: 5% (10% booked × 50% shown)']]}
 ).execute()
 
-ranked_str = ', '.join(f"{r.split()[0]} {rep_counts[r]}" for r in REPS_RANKED)
+ranked_str = ', '.join(f"{r.split()[0]} {rep_counts[r]:.1%}" for r in REPS_RANKED)
 print(f'Overall Statistics rebuilt — ICP (wildcard) + 10-week + reps ({ranked_str}).')
