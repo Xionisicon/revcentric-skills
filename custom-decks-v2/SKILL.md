@@ -1,9 +1,11 @@
 # Skill: Custom Decks v2
 
-Turn a master tracker (rep tabs of call activity) into a tailored, per-prospect sales
-deck — automatically — and drop a clickable deck link into a "Custom Decks" tab.
+One organ of the system. Takes every activated lead from the master tracker and builds a
+tailored, company-specific deck for each one — automatically — dropping a `View` link into
+a "Custom Decks" tab. The deck reads researched, not templated: real signals from their
+website, call transcript, and ICP are baked in.
 
-Pairs with **Master Tracker v2** (the data source) and shares the same Google Sheet.
+Pairs with **Master Tracker v2** (the body) and shares the same Google Sheet.
 
 ## What it does
 

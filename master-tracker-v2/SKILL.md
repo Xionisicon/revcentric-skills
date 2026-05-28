@@ -1,8 +1,8 @@
 # Skill: Master Tracker v2
 
-Import call activity from Apollo into a Google Sheet, one tab per rep, filtered to the
-dispositions a team cares about. This is the engine that feeds downstream boards
-(Custom Decks, Meeting Board, Pre-Brief).
+The body of the system. Imports call activity from Apollo into a Google Sheet, one tab per
+rep, filtered to the dispositions that matter. Every downstream organ — Custom Decks, the
+Meeting Board, Pre-Brief — is fed from what this tracker ingests.
 
 ## What it does
 
@@ -55,7 +55,34 @@ reviewed col G:
 - Custom Decks ← Activated Lead, Meeting Scheduled, Nurture, Connect Incomplete - Send Propaganda
 - Meeting Board ← Meeting Scheduled, Meeting Confirmed, Rescheduled
 
-See the **Custom Decks v2** and **Pre-Brief Notes v1** skills for those engines.
+See the **Custom Decks v2** and **Pre-Brief v1** skills for those engines.
+
+## Overall Statistics
+
+`overall_stats.py` rebuilds a summary tab from the live rep tabs and a Meeting Board.
+Run it any time you want the stats tab refreshed; also cron-safe.
+
+What it writes (21-row, A:J layout):
+- **OUTCOMES / ACTIVITY / QUALITY / BREAKDOWN** (cols A:B) — headline metrics and per-disposition counts
+- **ICP Report** (cols D:G) — per-persona Meetings / Activated / Nurture using wildcard COUNTIFS against
+  the Title column, so freeform titles ("Co-Founder & CEO") match the right bucket automatically
+- **10-Week Overview** (cols I:J) — rolling 10 rolling ISO-week meeting counts from the Meeting Board
+- **Rep Breakdown** (cols D:G, rows 16-20) — per-rep Meetings / Activated / Nurture, ranked by meetings
+- **Leaderboard** (cols I:J, rows 16-20) — same reps, ranked by meetings booked
+
+ICP personas and column positions are configurable via an `"overall_stats"` block in `config.json`.
+Add ICP overrides as:
+```json
+"overall_stats": {
+  "tab": "Overall Statistics",
+  "board_tab": "Meeting Board",
+  "icp_personas": [
+    ["Founder / Co-Founder", ["*found*"]],
+    ["CEO",                  ["*ceo*"]],
+    ...
+  ]
+}
+```
 
 ## Notes
 - Uses a browser User-Agent; some WAFs block default Python UAs on Apollo/Trellus.

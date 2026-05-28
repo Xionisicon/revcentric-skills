@@ -1,9 +1,11 @@
-# Skill: Pre-Brief Notes v1
+# Skill: Pre-Brief v1
 
-Auto-generate a one-page pre-meeting brief from the call that booked a meeting, and
-drop a clickable `View` link into a "Pre-Brief" column on a meetings board.
+One organ of the system. Turns the call that booked a meeting into a one-page Google Doc
+the rep reads before walking in — the bullets that matter, each anchored to the transcript
+moment it came from, with a `View` link dropped directly into the Meeting Board.
 
-Pairs with **Master Tracker v2** / a Meeting Board that already has a call recording per row.
+Pairs with **Master Tracker v2** (the body) and a Meeting Board that has a call recording
+per row.
 
 ## What it does
 
