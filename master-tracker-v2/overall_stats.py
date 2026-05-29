@@ -56,6 +56,11 @@ ACT_DISPO   = oc.get('activated_dispo', 'Activated Lead')
 NUR_DISPO   = oc.get('nurture_dispo', 'Nurture')
 BOOKED      = oc.get('booked_dispositions',
                      ['Meeting Scheduled', 'Meeting Confirmed', 'Rescheduled', 'Needs Rescheduled'])
+QUALIFIED   = oc.get('qualified_dispositions', [
+    'Meeting Scheduled', 'Meeting Confirmed', 'Rescheduled',
+    'Not Interested', 'Activated Lead', 'Nurture',
+    'Referred Outward', 'Not Me', 'Not Now',
+])
 
 def _col(n):
     """1-indexed column number → A1 letter."""
@@ -80,8 +85,8 @@ def sum_booked():
     parts = [f"COUNTIF('{r}'!{REP_FCOL}:{REP_FCOL},\"{d}\")" for r in REPS for d in BOOKED]
     return "=" + "+".join(parts)
 
-def sum_all():
-    parts = [f"COUNTA('{r}'!{REP_FCOL}2:{REP_FCOL})" for r in REPS]
+def sum_qualified():
+    parts = [f"COUNTIF('{r}'!{REP_FCOL}:{REP_FCOL},\"{d}\")" for r in REPS for d in QUALIFIED]
     return "=" + "+".join(parts)
 
 def rep_booked(rep):
@@ -129,10 +134,10 @@ ICP = oc.get('icp_personas', [
 bd, be, bf = f"'{BOARD_TAB}'", BOARD_DCOL, BOARD_ECOL
 A_COL_4_13 = [
     ('Qualified Meetings',    f'=COUNTIF({bd}!{BOARD_DCOL}:{BOARD_DCOL},"{QUAL_LABEL}")'),
-    ('Qualified Conversations', sum_all()),
+    ('Qualified Conversations', sum_qualified()),
     ('ACTIVITY',              ''),
     ('Meetings',              sum_booked()),
-    ('Conversations',         sum_all()),
+    ('Conversations',         sum_qualified()),
     ('QUALITY',               ''),
     ('Show Rate',             f'=IFERROR(COUNTIF({bd}!{BOARD_ECOL}:{BOARD_ECOL},"{SHOW_LABEL}")/COUNTA({bd}!{BOARD_ECOL}2:{BOARD_ECOL}),"—")'),
     ('Score',                 f'=IFERROR(ROUND(AVERAGE({bd}!{BOARD_FCOL}2:{BOARD_FCOL}),1),"—")'),
@@ -155,7 +160,8 @@ def live_rep_effective_rate(rep):
     try:
         r = svc.spreadsheets().values().get(
             spreadsheetId=sid, range=f"'{rep}'!{REP_FCOL}2:{REP_FCOL}").execute()
-        convos = sum(1 for row in r.get('values', []) if row and row[0].strip())
+        q_set = set(QUALIFIED)
+        convos = sum(1 for row in r.get('values', []) if row and row[0].strip() in q_set)
         return _board_showed.get(rep, 0) / convos if convos else 0.0
     except Exception:
         return 0.0
@@ -163,8 +169,8 @@ def live_rep_effective_rate(rep):
 def rep_effective_rate(rep):
     showed = (f"COUNTIFS('{BOARD_TAB}'!{BOARD_ECOL}:{BOARD_ECOL},\"{SHOW_LABEL}\","
               f"'{BOARD_TAB}'!{BOARD_ICOL}:{BOARD_ICOL},\"{rep}\")")
-    convos = f"COUNTA('{rep}'!{REP_FCOL}2:{REP_FCOL})"
-    return f'=IFERROR(TEXT({showed}/{convos},"0.0%"),"—")'
+    convos = "+".join(f"COUNTIF('{rep}'!{REP_FCOL}:{REP_FCOL},\"{d}\")" for d in QUALIFIED)
+    return f'=IFERROR(TEXT({showed}/({convos}),"0.0%"),"—")'
 
 rep_counts  = {rep: live_rep_effective_rate(rep) for rep in REPS}
 REPS_RANKED = sorted(REPS, key=lambda r: rep_counts[r], reverse=True)
